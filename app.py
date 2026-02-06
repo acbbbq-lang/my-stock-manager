@@ -1,10 +1,10 @@
 import streamlit as st
 import pandas as pd
 
-# 1. 페이지 설정
+# 1. 화면 설정
 st.set_page_config(page_title="일일 재고 현황표", layout="wide")
 
-# 2. CSS (지그재그 가로 배치 디자인)
+# 2. CSS 디자인 (가로 지그재그 정렬)
 st.markdown("""
 <style>
     .title { text-align: center; font-size: 3em; font-weight: bold; text-decoration: underline; margin-bottom: 30px; }
@@ -14,9 +14,9 @@ st.markdown("""
     .stock-card {
         border: 2px solid #333; border-radius: 50%; width: 130px; height: 130px;
         display: flex; flex-direction: column; justify-content: center; align-items: center;
-        background-color: white; margin: 10px; z-index: 2;
+        background-color: white; margin: 10px; z-index: 2; box-shadow: 2px 2px 5px rgba(0,0,0,0.1);
     }
-    .item-name { font-weight: bold; color: blue; font-size: 0.9em; }
+    .item-name { font-weight: bold; color: blue; font-size: 0.9em; text-align: center; }
     .item-qty { font-size: 1.2em; font-weight: bold; color: black; }
     .item-loc { color: green; font-size: 0.8em; font-weight: bold; }
     .zero-qty { background-color: #ffebee; }
@@ -34,20 +34,24 @@ if 'inven' not in st.session_state:
 
 # 4. 상단 입력 표 (무조건 노출)
 st.subheader("📝 재고 데이터 입력 (35개 항목)")
-# 에러가 났던 rerun 부분을 안전하게 처리
-edited_df = st.data_editor(st.session_state['inven'], num_rows="fixed", use_container_width=True)
+edited_df = st.data_editor(st.session_state['inven'], num_rows="fixed", use_container_width=True, key="editor")
 
 if st.button("수정 내용 적용하기"):
     st.session_state['inven'] = edited_df
-    st.rerun()  # <--- 이 부분이 잘리지 않게 주의하세요!
+    st.rerun()
 
 st.divider()
 
-# 5. 하단 현황판 (지그재그 35개 출력)
+# 5. 하단 현황판 (동그라미 35개 지그재그 출력)
 df = st.session_state['inven']
 st.markdown('<div class="board">', unsafe_allow_html=True)
 
 for i in range(0, 35, 7):
-    # 7개씩 끊어서 줄 생성 (홀수줄 밀기)
+    # 7개씩 줄 생성 (홀수줄 밀기)
     is_offset = "row-offset" if (i // 7) % 2 != 0 else ""
     st.markdown(f'<div class="stock-row {is_offset}">', unsafe_allow_html=True)
+    
+    row_data = df.iloc[i:i+7]
+    for _, row in row_data.iterrows():
+        name = str(row["품목명"]) if row["품목명"] else "-"
+        loc = str(row["위
