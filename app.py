@@ -40,7 +40,7 @@ if 'inventory_data' not in st.session_state:
         "위치코드": [""] * 35
     })
 
-# 4. 데이터 입력 섹션 (상단 표)
+# 4. 데이터 입력 섹션 (상단 표 고정)
 st.subheader("📝 재고 데이터 입력 (35개 항목)")
 edited_df = st.data_editor(
     st.session_state['inventory_data'],
@@ -57,7 +57,7 @@ if st.button("수정 내용 적용하기"):
 
 st.divider()
 
-# 5. 현황판 출력 섹션 (그림이 안 뜨지 않도록 루프 설정)
+# 5. 현황판 출력 섹션 (에러가 났던 63번 줄 수정 완료)
 df = st.session_state['inventory_data']
 
 st.markdown('<div class="board-container">', unsafe_allow_
