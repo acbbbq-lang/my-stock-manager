@@ -12,7 +12,7 @@ st.markdown("""
     
     /* 가로 배치를 강제하는 설정 */
     .stock-row { display: flex; flex-direction: row; justify-content: center; width: 100%; margin-bottom: -45px; }
-    .row-offset { margin-left: 140px; } /* 지그재그 효과를 위해 홀수 줄을 옆으로 밀기 */
+    .row-offset { margin-left: 140px; } /* 지그재그 효과를 위해 홀수 줄을 오른쪽으로 밀기 */
     
     .stock-card {
         border: 1.5px solid #333; border-radius: 50%; width: 130px; height: 130px;
@@ -32,6 +32,14 @@ st.markdown("""
 
 st.markdown('<div class="title">일 일 재 고 현 황 표</div>', unsafe_allow_html=True)
 
-# 3. 데이터 관리 (세션 상태 초기화)
+# 3. 데이터 관리 및 초기화 (37번 줄 에러 해결 구간)
 if 'inventory_data' not in st.session_state:
-    st.session_state['inventory_data'] = pd.
+    st.session_state['inventory_data'] = pd.DataFrame(columns=["품목명", "수량", "위치코드"])
+
+# 4. 데이터 입력 섹션
+st.subheader("📝 재고 데이터 입력")
+edited_df = st.data_editor(
+    st.session_state['inventory_data'],
+    num_rows="dynamic",
+    use_container_width=True,
+    hide_index=True
