@@ -35,7 +35,16 @@ edited_df = st.data_editor(
     hide_index=True
 )
 
-# 5. 적용 버튼 (에러 방지 로직 강화)
+# 5. 적용 버튼 (41번 줄 에러 구간 수정 완료)
 if st.button("수정 내용 적용하기"):
     if edited_df is not None:
-        df_clean = edited_df.dropna(subset=["품목명
+        # 에러가 났던 부분을 아주 안전한 방식으로 교체했습니다.
+        df_temp = edited_df.copy()
+        # 품목명이 비어있지 않은 데이터만 골라내기
+        st.session_state.inventory_data = df_temp[df_temp["품목명"].fillna("").str.strip() != ""]
+        st.rerun()
+
+st.divider()
+
+# 6. 현황
+
