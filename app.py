@@ -4,7 +4,7 @@ import pandas as pd
 # 1. 화면 설정
 st.set_page_config(page_title="일일 재고 현황표", layout="wide")
 
-# 2. 디자인 설정
+# 2. 디자인 설정 (스타일 태그)
 st.markdown("""
     <style>
     .title { text-align: center; font-size: 3em; font-weight: bold; text-decoration: underline; margin-bottom: 30px; }
@@ -27,9 +27,16 @@ if 'inventory_data' not in st.session_state:
 
 st.subheader("📝 재고 편집")
 
-# 4. 편집기
+# 4. 편집기 (문제가 된 31번 줄 괄호 짝 수정 완료)
 edited_df = st.data_editor(
     st.session_state.inventory_data,
     num_rows="dynamic",
     use_container_width=True,
+    hide_index=True
+)
+
+# 5. 수정 내용 적용
+if st.button("수정 내용 적용하기"):
+    if not edited_df.empty:
+        # 품목명이 입력된 데이터만 필터링
 
