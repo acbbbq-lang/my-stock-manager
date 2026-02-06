@@ -4,7 +4,7 @@ import pandas as pd
 # 1. 페이지 설정
 st.set_page_config(page_title="일일 재고 현황표", layout="wide")
 
-# 2. CSS: 글자 가림 방지를 위해 겹침 간격 완화
+# 2. CSS: 공백 제거 및 밀착 정렬
 st.markdown("""
 <style>
     .title { text-align: center; font-size: 3em; font-weight: bold; text-decoration: underline; margin-bottom: 20px; }
@@ -17,12 +17,14 @@ st.markdown("""
         display: flex; 
         justify-content: center; 
         width: 100%; 
-        /* 기존 -55px에서 -38px로 조정하여 글자 가림 방지 */
-        margin-bottom: -38px; 
+        /* 공백을 없애기 위해 값을 -65px로 강화 (도형 높이의 절반) */
+        margin-bottom: -65px; 
         position: relative;
     }
 
-    /* 레이어 순서: 위쪽 행이 아래쪽 행을 살짝만 덮도록 설정 */
+    /* 마지막 행은 아래 여백을 주어 잘리지 않게 설정 */
+    .row-cont:last-child { margin-bottom: 50px; }
+
     .layer-top { z-index: 100; }
     .layer-bottom { z-index: 50; }
 
@@ -38,10 +40,10 @@ st.markdown("""
     .shape-circle { border-radius: 50%; }
     .shape-square { border-radius: 15px; }
 
-    /* 텍스트 스타일: 글자가 선명하게 보이도록 크기 및 간격 미세 조정 */
-    .p-n { font-weight: bold; font-size: 14px; margin-bottom: 4px; z-index: 110; }
-    .p-q { font-size: 20px; font-weight: 900; color: #000; line-height: 1.0; }
-    .p-l { color: #8eb44e; font-size: 12px; font-weight: bold; margin-top: 4px; }
+    /* 글자가 겹쳐서 안 보이지 않도록 위치 조정 */
+    .p-n { font-weight: bold; font-size: 13px; margin-bottom: 2px; }
+    .p-q { font-size: 19px; font-weight: 900; color: #000; line-height: 1.0; }
+    .p-l { color: #8eb44e; font-size: 11px; font-weight: bold; margin-top: 2px; }
     
     .t-blue { color: #0000FF; }
     .t-orange { color: #d35400; }
@@ -76,7 +78,6 @@ for r in range(5):
     layer_cls = "layer-top" if is_circle else "layer-bottom"
     shape_cls = "shape-circle" if is_circle else "shape-square"
     
-    # 동그라미 6개, 네모 7개 구성 유지
     count = 6 if is_circle else 7
     
     full_html += f'<div class="row-cont {layer_cls}">'
@@ -87,7 +88,6 @@ for r in range(5):
         c_cls = "t-orange" if any(x in nm for x in ["WNS", "WCRS", "WUR"]) else "t-blue"
         bg_cls = "zero-bg" if qt == 0 else ""
         
-        # 텍스트 가림 방지를 위해 텍스트 상단 여백 보정
         card_tag = f'<div class="card {shape_cls} {bg_cls}"><div class="p-n {c_cls}">{nm}</div><div class="p-q">{qt:,}</div><div class="p-l">{lc}</div></div>'
         full_html += card_tag
         
