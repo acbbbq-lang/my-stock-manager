@@ -4,7 +4,7 @@ import pandas as pd
 # 1. 페이지 설정
 st.set_page_config(page_title="일일 재고 현황표", layout="wide")
 
-# 2. CSS: 카드 크기 확대 및 텍스트 강조
+# 2. CSS: 동그라미 유지, 네모만 확대
 st.markdown("""
 <style>
     .title { text-align: center; font-size: 3.5em; font-weight: bold; text-decoration: underline; margin-bottom: 30px; }
@@ -17,8 +17,8 @@ st.markdown("""
         display: flex; 
         justify-content: center; 
         width: 100%; 
-        /* 카드 크기가 커진 만큼 겹침 강도를 -80px로 조정 (공백 제거) */
-        margin-bottom: -80px; 
+        /* 상하 밀착을 위한 간격 (네모가 커져서 -75px로 조정) */
+        margin-bottom: -75px; 
         position: relative;
     }
 
@@ -27,23 +27,31 @@ st.markdown("""
     .layer-top { z-index: 100; }
     .layer-bottom { z-index: 50; }
 
-    /* 카드 크기를 130px -> 160px로 확대 */
+    /* 공통 카드 스타일 */
     .card {
-        width: 160px; height: 160px;
         display: flex; flex-direction: column; justify-content: center; align-items: center;
-        background-color: white; border: 2px solid #000;
-        margin: 0 -8px; 
-        flex-shrink: 0;
+        background-color: white; border: 2.5px solid #000;
+        margin: 0 -10px; flex-shrink: 0;
         box-shadow: 2px 2px 6px rgba(0,0,0,0.15);
     }
 
-    .shape-circle { border-radius: 50%; }
-    .shape-square { border-radius: 20px; }
+    /* 동그라미: 기존 크기 유지 (130px) */
+    .shape-circle { 
+        width: 140px; height: 140px; 
+        border-radius: 50%; 
+    }
 
-    /* 텍스트 크기 확대 및 가독성 향상 */
-    .p-n { font-weight: bold; font-size: 16px; margin-bottom: 5px; } /* 품목명 크게 */
-    .p-q { font-size: 24px; font-weight: 900; color: #000; line-height: 1.1; } /* 수량 강조 */
-    .p-l { color: #8eb44e; font-size: 14px; font-weight: bold; margin-top: 5px; } /* 위치코드 */
+    /* 네모: 크기 확대 (180px) 및 글자 공간 확보 */
+    .shape-square { 
+        width: 180px; height: 160px; 
+        border-radius: 15px; 
+        background-color: #fdfdfd;
+    }
+
+    /* 텍스트 스타일: 네모 안에서 더 잘 보이도록 조정 */
+    .p-n { font-weight: bold; font-size: 16px; margin-bottom: 3px; }
+    .p-q { font-size: 26px; font-weight: 900; color: #000; line-height: 1.0; }
+    .p-l { color: #8eb44e; font-size: 14px; font-weight: bold; margin-top: 4px; }
     
     .t-blue { color: #0000FF; }
     .t-orange { color: #d35400; }
@@ -62,9 +70,9 @@ if 'inven' not in st.session_state:
         "위치코드": [f"A{i}" for i in range(101, 101 + total_needed)]
     })
 
-with st.expander("📝 데이터 관리"):
+with st.expander("📝 데이터 편집기"):
     edited_df = st.data_editor(st.session_state['inven'], use_container_width=True)
-    if st.button("저장하기"):
+    if st.button("데이터 저장"):
         st.session_state['inven'] = edited_df
         st.rerun()
 
@@ -79,7 +87,6 @@ for r in range(5):
     shape_cls = "shape-circle" if is_circle else "shape-square"
     
     count = 6 if is_circle else 7
-    
     full_html += f'<div class="row-cont {layer_cls}">'
     
     sub_df = df.iloc[current_idx : current_idx + count]
@@ -88,8 +95,10 @@ for r in range(5):
         c_cls = "t-orange" if any(x in nm for x in ["WNS", "WCRS", "WUR"]) else "t-blue"
         bg_cls = "zero-bg" if qt == 0 else ""
         
-        card_tag = f'<div class="card {shape_cls} {bg_cls}"><div class="p-n {c_cls}">{nm}</div><div class="p-q">{qt:,}</div><div class="p-l">{lc}</div></div>'
-        full_html += card_tag
+        full_html += f'<div class="card {shape_cls} {bg_cls}">'
+        full_html += f'<div class="p-n {c_cls}">{nm}</div>'
+        full_html += f'<div class="p-q">{qt:,}</div>'
+        full_html += f'<div class="p-l">{lc}</div></div>'
         
     full_html += '</div>'
     current_idx += count
