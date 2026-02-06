@@ -1,9 +1,10 @@
 import streamlit as st
 import pandas as pd
 
+# 1. 화면 설정
 st.set_page_config(page_title="일일 재고 현황표", layout="wide")
 
-# 1. 디자인 설정 (스타일 태그 분리)
+# 2. 디자인 설정
 st.markdown("""
     <style>
     .title { text-align: center; font-size: 3em; font-weight: bold; text-decoration: underline; margin-bottom: 30px; }
@@ -20,24 +21,15 @@ st.markdown("""
 
 st.markdown('<div class="title">일 일 재 고 현 황 표</div>', unsafe_allow_html=True)
 
-# 2. 데이터 초기화
+# 3. 데이터 초기화 (아이템명과 수량만)
 if 'inventory_data' not in st.session_state:
     st.session_state.inventory_data = pd.DataFrame(columns=["품목명", "수량"])
 
 st.subheader("📝 재고 편집")
 
-# 3. 편집기 (가장 간결한 설정)
+# 4. 편집기
 edited_df = st.data_editor(
     st.session_state.inventory_data,
     num_rows="dynamic",
     use_container_width=True,
-    hide_index=True
-)
-
-if st.button("수정 내용 적용하기"):
-    # 품목명이 비어있지 않은 데이터만 필터링
-    df_new = edited_df.dropna(subset=["품목명"]).copy()
-    st.session_state.inventory_data = df_new
-    st.rer
-
 
