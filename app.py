@@ -1,100 +1,95 @@
 import streamlit as st
-import sqlite3
 import pandas as pd
+import sqlite3
 
-# --- 데이터베이스 설정 ---
-def init_db():
-    conn = sqlite3.connect('inventory.db')
-    c = conn.cursor()
-    c.execute('''CREATE TABLE IF NOT EXISTS inventory
-                 (id INTEGER PRIMARY KEY AUTOINCREMENT, 
-                  item_name TEXT, 
-                  quantity INTEGER, 
-                  location TEXT)''') # '위치(코드)' 칸 추가
-    conn.commit()
-    conn.close()
+# --- 화면 스타일 설정 (이미지 디자인 재현) ---
+st.set_page_config(page_title="일일 재고 현황표", layout="wide")
 
-init_db()
-
-# --- 화면 스타일 설정 (이미지 느낌 내기) ---
 st.markdown("""
     <style>
+    .title { text-align: center; font-size: 3em; font-weight: bold; text-decoration: underline; margin-bottom: 50px; }
+    .stock-container { display: flex; flex-wrap: wrap; justify-content: center; background-color: white; padding: 20px; border: 1px solid #ccc; }
     .stock-card {
-        border: 2px solid #333;
+        border: 1px solid #333;
         border-radius: 50%;
-        width: 150px;
-        height: 150px;
+        width: 130px;
+        height: 130px;
         display: flex;
         flex-direction: column;
         justify-content: center;
         align-items: center;
-        margin: 10px;
-        background-color: white;
-        box-shadow: 2px 2px 5px rgba(0,0,0,0.1);
+        margin: 15px;
         text-align: center;
+        background-color: white;
     }
-    .item-name { font-weight: bold; color: blue; font-size: 1.1em; }
-    .item-qty { font-size: 1.5em; font-weight: bold; margin: 5px 0; }
-    .item-loc { color: #88bb88; font-size: 0.9em; }
-    .low-stock { background-color: #ffebee; border-color: red; }
-    .low-stock .item-qty { color: red; }
+    .item-name { font-weight: bold; color: #0000FF; font-size: 1.1em; }
+    .item-qty { font-size: 1.3em; font-weight: bold; margin: 2px 0; color: #000; }
+    .item-loc { color: #99cc99; font-size: 0.85em; }
+    .low-stock { background-color: #ffebee; border-color: #ff0000; }
+    .low-stock .item-qty { color: #ff0000; }
     </style>
     """, unsafe_allow_html=True)
 
-st.title("📊 일일 재고 현황판")
-
-# --- 입력 부분 (사이드바) ---
-st.sidebar.header("📝 재고 입력/수정")
-with st.sidebar.form("input_form"):
-    name = st.text_input("품목명 (예: WASW)")
-    qty = st.number_input("수량", min_value=0, step=1)
-    loc = st.text_input("위치 코드 (예: A101)")
-    submit = st.form_submit_button("장부에 기록")
-
-if submit:
+# --- 데이터베이스 함수 ---
+def save_to_db(df):
     conn = sqlite3.connect('inventory.db')
-    c = conn.cursor()
-    c.execute("SELECT * FROM inventory WHERE item_name=?", (name,))
-    if c.fetchone():
-        c.execute("UPDATE inventory SET quantity=?, location=? WHERE item_name=?", (qty, loc, name))
-    else:
-        c.execute("INSERT INTO inventory (item_name, quantity, location) VALUES (?, ?, ?)", (name, qty, loc))
+    df.to_sql('inventory', conn, if_exists='replace', index=False)
     conn.commit()
     conn.close()
-    st.rerun()
 
-# --- 화면 출력 (대시보드 형태) ---
-conn = sqlite3.connect('inventory.db')
-df = pd.read_sql_query("SELECT * FROM inventory", conn)
-conn.close()
+def load_from_db():
+    conn = sqlite3.connect('inventory.db')
+    try:
+        df = pd.read_sql_query("SELECT * FROM inventory", conn)
+    except:
+        df = pd.DataFrame(columns=['item_name', 'quantity', 'location'])
+    conn.close()
+    return df
 
+# --- 메인 화면 ---
+st.markdown('<div class="title">일 일 재 고 현 황 표</div>', unsafe_allow_html=True)
+
+# 사이드바: 엑셀 업로드
+st.sidebar.header("📁 데이터 업데이트")
+uploaded_file = st.sidebar.file_ acorns_uploader("엑셀 파일 업로드 (.xlsx)", type=["xlsx"])
+
+if uploaded_file:
+    try:
+        new_data = pd.read_excel(uploaded_file)
+        # 필수 컬럼 확인
+        if all(col in new_data.columns for col in ['item_name', 'quantity', 'location']):
+            save_to_db(new_data)
+            st.sidebar.success("엑셀 데이터 반영 완료!")
+        else:
+            st.sidebar.error("엑셀 헤더를 확인하세요: item_name, quantity, location")
+    except Exception as e:
+        st.sidebar.error(f"에러 발생: {e}")
+
+# 데이터 불러오기
+df = load_from_db()
+
+# 현황판 출력
 if not df.empty:
-    # 6개씩 한 줄에 배치 (이미지와 유사하게)
-    cols = st.columns(6)
-    for idx, row in df.iterrows():
-        with cols[idx % 6]:
-            # 수량이 0이면 빨간색 스타일 적용
-            card_class = "stock-card low-stock" if row['quantity'] == 0 else "stock-card"
-            
-            st.markdown(f"""
-                <div class="{card_class}">
-                    <div class="item-name">{row['item_name']}</div>
-                    <div class="item-qty">{row['quantity']:,}</div>
-                    <div class="item-loc">{row['location']}</div>
-                </div>
+    # 이미지처럼 격자 형태로 배치하기 위해 컨테이너 생성
+    st.markdown('<div class="stock-container">', unsafe_allow_html=True)
+    
+    # 한 줄에 6개씩 배치
+    rows = [df[i:i + 6] for i in range(0, len(df), 6)]
+    
+    for row_data in rows:
+        cols = st.columns(6)
+        for i, (idx, item) in enumerate(row_data.iterrows()):
+            with cols[i]:
+                # 수량이 0인 경우 빨간색 강조
+                is_low = "low-stock" if item['quantity'] == 0 else ""
+                st.markdown(f"""
+                    <div class="stock-card {is_low}">
+                        <div class="item-name">{item['item_name']}</div>
+                        <div class="item-qty">{int(item['quantity']):,}</div>
+                        <div class="item-loc">{item['location']}</div>
+                    </div>
                 """, unsafe_allow_html=True)
+    st.markdown('</div>', unsafe_allow_html=True)
 else:
-    st.info("왼쪽에서 재고를 먼저 입력해 주세요!")
+    st.info("왼쪽 사이드바에서 엑셀 파일을 업로드하면 현황표가 나타납니다.")
 
-# 삭제 기능은 하단에 작게 배치
-st.divider()
-if not df.empty:
-    with st.expander("🗑️ 품목 삭제하기"):
-        del_item = st.selectbox("삭제할 품목", df['item_name'].tolist())
-        if st.button("삭제 실행"):
-            conn = sqlite3.connect('inventory.db')
-            c = conn.cursor()
-            c.execute("DELETE FROM inventory WHERE item_name=?", (del_item,))
-            conn.commit()
-            conn.close()
-            st.rerun()
