@@ -1,10 +1,10 @@
 import streamlit as st
 import pandas as pd
 
-# 1. 화면 설정 (넓은 레이아웃)
+# 1. 화면 설정 (광폭 레이아웃)
 st.set_page_config(page_title="일일 재고 현황표", layout="wide")
 
-# 2. 디자인 스타일 (지그재그 가로 배치 및 원형 스타일)
+# 2. 디자인 스타일 (가로 지그재그 배치 및 원형 스타일)
 st.markdown("""
 <style>
     .title { text-align: center; font-size: 3.5em; font-weight: bold; text-decoration: underline; margin-bottom: 40px; }
@@ -24,7 +24,7 @@ st.markdown("""
     .item-qty { font-size: 1.2em; font-weight: bold; color: #000; margin: 2px 0; }
     .item-loc { color: #8DB48E; font-size: 0.8em; font-weight: bold; }
     
-    /* 수량 0 또는 품절 스타일 */
+    /* 수량 0 스타일 */
     .out-of-stock { background-color: #FDF2F4; }
     .out-of-stock .item-qty { color: #FF0000; }
 </style>
@@ -32,8 +32,34 @@ st.markdown("""
 
 st.markdown('<div class="title">일 일 재 고 현 황 표</div>', unsafe_allow_html=True)
 
-# 3. 데이터 초기화 (35개 행 미리 생성)
+# 3. 데이터 초기화 (35개 행 고정 생성)
 if 'inventory_data' not in st.session_state:
-    # 35개의 빈 행을 가진 데이터프레임 생성
-    initial_data = pd.DataFrame(
-        {"품목명": [""] * 35, "수량": [None] * 35, "위치
+    initial_data = pd.DataFrame({
+        "품목명": [""] * 35, 
+        "수량": [None] * 35, 
+        "위치코드": [""] * 35
+    })
+    st.session_state['inventory_data'] = initial_data
+
+# 4. 데이터 입력 표 (35개 행)
+st.subheader("📝 재고 데이터 입력 (35개 항목)")
+edited_df = st.data_editor(
+    st.session_state['inventory_data'],
+    num_rows="fixed",
+    use_container_width=True,
+    hide_index=False,
+    key="inventory_editor"
+)
+
+# [수정 내용 적용하기] 버튼
+if st.button("수정 내용 적용하기"):
+    if edited_df is not None:
+        st.session_state['inventory_data'] = edited_df.copy()
+        st.rerun()
+
+st.divider()
+
+# 5. 현황판 출력 (7개씩 5줄 = 35개)
+df = st.session_state['inventory_data']
+
+st.markdown('<div class="board-
