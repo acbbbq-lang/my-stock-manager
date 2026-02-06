@@ -1,15 +1,15 @@
 import streamlit as st
 import pandas as pd
 
-# 1. 화면 설정
+# 1. 페이지 설정
 st.set_page_config(page_title="일일 재고 현황표", layout="wide")
 
-# 2. CSS 디자인 (가로 지그재그 정렬)
+# 2. CSS (지그재그 가로 배치 디자인)
 st.markdown("""
 <style>
     .title { text-align: center; font-size: 3em; font-weight: bold; text-decoration: underline; margin-bottom: 30px; }
     .board { display: flex; flex-direction: column; align-items: center; width: 100%; }
-    .stock-row { display: flex; flex-direction: row; justify-content: center; width: 100%; margin-bottom: -40px; }
+    .stock-row { display: flex; flex-direction: row; justify-content: center; width: 100%; margin-bottom: -45px; }
     .row-offset { margin-left: 140px; }
     .stock-card {
         border: 2px solid #333; border-radius: 50%; width: 130px; height: 130px;
@@ -32,10 +32,22 @@ if 'inven' not in st.session_state:
         "품목명": [""] * 35, "수량": [0] * 35, "위치코드": [""] * 35
     })
 
-# 4. 상단 입력 표 (무조건 표시)
+# 4. 상단 입력 표 (무조건 노출)
 st.subheader("📝 재고 데이터 입력 (35개 항목)")
-edited_df = st.data_editor(st.session_state['inven'], num_rows="fixed", use_container_width=True, key="editor")
+# 에러가 났던 rerun 부분을 안전하게 처리
+edited_df = st.data_editor(st.session_state['inven'], num_rows="fixed", use_container_width=True)
 
 if st.button("수정 내용 적용하기"):
     st.session_state['inven'] = edited_df
-    st.rer
+    st.rerun()  # <--- 이 부분이 잘리지 않게 주의하세요!
+
+st.divider()
+
+# 5. 하단 현황판 (지그재그 35개 출력)
+df = st.session_state['inven']
+st.markdown('<div class="board">', unsafe_allow_html=True)
+
+for i in range(0, 35, 7):
+    # 7개씩 끊어서 줄 생성 (홀수줄 밀기)
+    is_offset = "row-offset" if (i // 7) % 2 != 0 else ""
+    st.markdown(f'<div class="stock-row {is_offset}">', unsafe_allow_html=True)
