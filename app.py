@@ -4,7 +4,8 @@ import pandas as pd
 # 1. 화면 설정
 st.set_page_config(page_title="일일 재고 현황표", layout="wide")
 
-# 2. 지그재그 배치 및 이미지와 동일한 색상 스타일 설정
+# 2. 디자인 스타일 (지그재그 배치 및 색상 설정)
+# 8번 줄부터 시작되는 스타일 코드를 안전하게 닫았습니다.
 st.markdown("""
 <style>
     .title { text-align: center; font-size: 3.5em; font-weight: bold; text-decoration: underline; margin-bottom: 30px; }
@@ -21,8 +22,16 @@ st.markdown("""
     .item-loc { color: #8DB48E; font-size: 0.9em; font-weight: bold; }
     .out-of-stock { background-color: #FDF2F4; }
     .out-of-stock .item-qty { color: #FF0000; }
-</
-if st.button("수정 내용 적용하기"):
-    if edited_df is not None:
-        # 품목명이 있는 행
+</style>
+""", unsafe_allow_html=True)
 
+st.markdown('<div class="title">일 일 재 고 현 황 표</div>', unsafe_allow_html=True)
+
+# 3. 데이터 초기화 (품목명, 수량, 위치코드)
+if 'inventory_data' not in st.session_state:
+    st.session_state.inventory_data = pd.DataFrame(columns=["품목명", "수량", "위치코드"])
+
+st.subheader("📝 재고 데이터 입력")
+edited_df = st.data_editor(
+    st.session_state.inventory_data, 
+    num_rows="
