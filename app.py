@@ -12,7 +12,7 @@ st.markdown("""
     
     /* 가로 배치를 강제하는 레이아웃 */
     .stock-row { display: flex; flex-direction: row; justify-content: center; width: 100%; margin-bottom: -45px; }
-    .row-offset { margin-left: 140px; } /* 지그재그 효과를 위한 밀기 */
+    .row-offset { margin-left: 140px; } /* 지그재그 효과 */
     
     .stock-card {
         border: 1.5px solid #333; border-radius: 50%; width: 130px; height: 130px;
@@ -24,7 +24,7 @@ st.markdown("""
     .item-qty { font-size: 1.2em; font-weight: bold; color: #000; margin: 2px 0; }
     .item-loc { color: #8DB48E; font-size: 0.8em; font-weight: bold; }
     
-    /* 수량 0일 때 빨간색 강조 */
+    /* 수량 0일 때 스타일 */
     .out-of-stock { background-color: #FDF2F4; }
     .out-of-stock .item-qty { color: #FF0000; }
 </style>
@@ -32,7 +32,6 @@ st.markdown("""
 
 st.markdown('<div class="title">일 일 재 고 현 황 표</div>', unsafe_allow_html=True)
 
-# 3. 데이터 초기화 (35개 항목 고정 생성)
+# 3. 데이터 초기화 (35개 행 고정 - 에러가 났던 38번 줄 수정 완료)
 if 'inventory_data' not in st.session_state:
-    st.session_state['inventory_data'] = pd.DataFrame({
-        "
+    st.session_state
