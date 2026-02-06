@@ -4,10 +4,10 @@ import pandas as pd
 # 1. 페이지 설정
 st.set_page_config(page_title="일일 재고 현황표", layout="wide")
 
-# 2. CSS: 공백 제거 및 밀착 정렬
+# 2. CSS: 카드 크기 확대 및 텍스트 강조
 st.markdown("""
 <style>
-    .title { text-align: center; font-size: 3em; font-weight: bold; text-decoration: underline; margin-bottom: 20px; }
+    .title { text-align: center; font-size: 3.5em; font-weight: bold; text-decoration: underline; margin-bottom: 30px; }
     
     .main-container {
         display: flex; flex-direction: column; align-items: center; width: 100%;
@@ -17,33 +17,33 @@ st.markdown("""
         display: flex; 
         justify-content: center; 
         width: 100%; 
-        /* 공백을 없애기 위해 값을 -65px로 강화 (도형 높이의 절반) */
-        margin-bottom: -65px; 
+        /* 카드 크기가 커진 만큼 겹침 강도를 -80px로 조정 (공백 제거) */
+        margin-bottom: -80px; 
         position: relative;
     }
 
-    /* 마지막 행은 아래 여백을 주어 잘리지 않게 설정 */
     .row-cont:last-child { margin-bottom: 50px; }
 
     .layer-top { z-index: 100; }
     .layer-bottom { z-index: 50; }
 
+    /* 카드 크기를 130px -> 160px로 확대 */
     .card {
-        width: 130px; height: 130px;
+        width: 160px; height: 160px;
         display: flex; flex-direction: column; justify-content: center; align-items: center;
         background-color: white; border: 2px solid #000;
-        margin: 0 -5px; 
+        margin: 0 -8px; 
         flex-shrink: 0;
-        box-shadow: 1px 1px 4px rgba(0,0,0,0.1);
+        box-shadow: 2px 2px 6px rgba(0,0,0,0.15);
     }
 
     .shape-circle { border-radius: 50%; }
-    .shape-square { border-radius: 15px; }
+    .shape-square { border-radius: 20px; }
 
-    /* 글자가 겹쳐서 안 보이지 않도록 위치 조정 */
-    .p-n { font-weight: bold; font-size: 13px; margin-bottom: 2px; }
-    .p-q { font-size: 19px; font-weight: 900; color: #000; line-height: 1.0; }
-    .p-l { color: #8eb44e; font-size: 11px; font-weight: bold; margin-top: 2px; }
+    /* 텍스트 크기 확대 및 가독성 향상 */
+    .p-n { font-weight: bold; font-size: 16px; margin-bottom: 5px; } /* 품목명 크게 */
+    .p-q { font-size: 24px; font-weight: 900; color: #000; line-height: 1.1; } /* 수량 강조 */
+    .p-l { color: #8eb44e; font-size: 14px; font-weight: bold; margin-top: 5px; } /* 위치코드 */
     
     .t-blue { color: #0000FF; }
     .t-orange { color: #d35400; }
