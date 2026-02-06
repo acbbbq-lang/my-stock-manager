@@ -4,10 +4,10 @@ import pandas as pd
 # 1. 페이지 설정
 st.set_page_config(page_title="일일 재고 현황표", layout="wide")
 
-# 2. CSS: 동그라미 유지, 네모만 확대
+# 2. CSS: 글자 가림 방지를 위해 겹침 간격 완화
 st.markdown("""
 <style>
-    .title { text-align: center; font-size: 3.5em; font-weight: bold; text-decoration: underline; margin-bottom: 30px; }
+    .title { text-align: center; font-size: 3em; font-weight: bold; text-decoration: underline; margin-bottom: 20px; }
     
     .main-container {
         display: flex; flex-direction: column; align-items: center; width: 100%;
@@ -17,41 +17,31 @@ st.markdown("""
         display: flex; 
         justify-content: center; 
         width: 100%; 
-        /* 상하 밀착을 위한 간격 (네모가 커져서 -75px로 조정) */
-        margin-bottom: -75px; 
+        /* 기존 -55px에서 -38px로 조정하여 글자 가림 방지 */
+        margin-bottom: -38px; 
         position: relative;
     }
 
-    .row-cont:last-child { margin-bottom: 50px; }
-
+    /* 레이어 순서: 위쪽 행이 아래쪽 행을 살짝만 덮도록 설정 */
     .layer-top { z-index: 100; }
     .layer-bottom { z-index: 50; }
 
-    /* 공통 카드 스타일 */
     .card {
+        width: 130px; height: 130px;
         display: flex; flex-direction: column; justify-content: center; align-items: center;
-        background-color: white; border: 2.5px solid #000;
-        margin: 0 -10px; flex-shrink: 0;
-        box-shadow: 2px 2px 6px rgba(0,0,0,0.15);
+        background-color: white; border: 2px solid #000;
+        margin: 0 -5px; 
+        flex-shrink: 0;
+        box-shadow: 1px 1px 4px rgba(0,0,0,0.1);
     }
 
-    /* 동그라미: 기존 크기 유지 (130px) */
-    .shape-circle { 
-        width: 140px; height: 140px; 
-        border-radius: 50%; 
-    }
+    .shape-circle { border-radius: 50%; }
+    .shape-square { border-radius: 15px; }
 
-    /* 네모: 크기 확대 (180px) 및 글자 공간 확보 */
-    .shape-square { 
-        width: 180px; height: 160px; 
-        border-radius: 15px; 
-        background-color: #fdfdfd;
-    }
-
-    /* 텍스트 스타일: 네모 안에서 더 잘 보이도록 조정 */
-    .p-n { font-weight: bold; font-size: 16px; margin-bottom: 3px; }
-    .p-q { font-size: 26px; font-weight: 900; color: #000; line-height: 1.0; }
-    .p-l { color: #8eb44e; font-size: 14px; font-weight: bold; margin-top: 4px; }
+    /* 텍스트 스타일: 글자가 선명하게 보이도록 크기 및 간격 미세 조정 */
+    .p-n { font-weight: bold; font-size: 14px; margin-bottom: 4px; z-index: 110; }
+    .p-q { font-size: 20px; font-weight: 900; color: #000; line-height: 1.0; }
+    .p-l { color: #8eb44e; font-size: 12px; font-weight: bold; margin-top: 4px; }
     
     .t-blue { color: #0000FF; }
     .t-orange { color: #d35400; }
@@ -70,9 +60,9 @@ if 'inven' not in st.session_state:
         "위치코드": [f"A{i}" for i in range(101, 101 + total_needed)]
     })
 
-with st.expander("📝 데이터 편집기"):
+with st.expander("📝 데이터 관리"):
     edited_df = st.data_editor(st.session_state['inven'], use_container_width=True)
-    if st.button("데이터 저장"):
+    if st.button("저장하기"):
         st.session_state['inven'] = edited_df
         st.rerun()
 
@@ -86,7 +76,9 @@ for r in range(5):
     layer_cls = "layer-top" if is_circle else "layer-bottom"
     shape_cls = "shape-circle" if is_circle else "shape-square"
     
+    # 동그라미 6개, 네모 7개 구성 유지
     count = 6 if is_circle else 7
+    
     full_html += f'<div class="row-cont {layer_cls}">'
     
     sub_df = df.iloc[current_idx : current_idx + count]
@@ -95,10 +87,9 @@ for r in range(5):
         c_cls = "t-orange" if any(x in nm for x in ["WNS", "WCRS", "WUR"]) else "t-blue"
         bg_cls = "zero-bg" if qt == 0 else ""
         
-        full_html += f'<div class="card {shape_cls} {bg_cls}">'
-        full_html += f'<div class="p-n {c_cls}">{nm}</div>'
-        full_html += f'<div class="p-q">{qt:,}</div>'
-        full_html += f'<div class="p-l">{lc}</div></div>'
+        # 텍스트 가림 방지를 위해 텍스트 상단 여백 보정
+        card_tag = f'<div class="card {shape_cls} {bg_cls}"><div class="p-n {c_cls}">{nm}</div><div class="p-q">{qt:,}</div><div class="p-l">{lc}</div></div>'
+        full_html += card_tag
         
     full_html += '</div>'
     current_idx += count
