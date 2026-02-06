@@ -49,14 +49,13 @@ def load_from_db():
 # --- 메인 화면 ---
 st.markdown('<div class="title">일 일 재 고 현 황 표</div>', unsafe_allow_html=True)
 
-# 사이드바: 엑셀 업로드
+# 사이드바: 엑셀 업로드 (오타 수정됨!)
 st.sidebar.header("📁 데이터 업데이트")
-uploaded_file = st.sidebar.file_ acorns_uploader("엑셀 파일 업로드 (.xlsx)", type=["xlsx"])
+uploaded_file = st.sidebar.file_uploader("엑셀 파일 업로드 (.xlsx)", type=["xlsx"])
 
 if uploaded_file:
     try:
         new_data = pd.read_excel(uploaded_file)
-        # 필수 컬럼 확인
         if all(col in new_data.columns for col in ['item_name', 'quantity', 'location']):
             save_to_db(new_data)
             st.sidebar.success("엑셀 데이터 반영 완료!")
@@ -70,17 +69,14 @@ df = load_from_db()
 
 # 현황판 출력
 if not df.empty:
-    # 이미지처럼 격자 형태로 배치하기 위해 컨테이너 생성
     st.markdown('<div class="stock-container">', unsafe_allow_html=True)
     
-    # 한 줄에 6개씩 배치
-    rows = [df[i:i + 6] for i in range(0, len(df), 6)]
-    
-    for row_data in rows:
+    # 6개씩 컬럼 생성
+    for i in range(0, len(df), 6):
+        row_data = df.iloc[i:i+6]
         cols = st.columns(6)
-        for i, (idx, item) in enumerate(row_data.iterrows()):
-            with cols[i]:
-                # 수량이 0인 경우 빨간색 강조
+        for j, (idx, item) in enumerate(row_data.iterrows()):
+            with cols[j]:
                 is_low = "low-stock" if item['quantity'] == 0 else ""
                 st.markdown(f"""
                     <div class="stock-card {is_low}">
@@ -92,4 +88,3 @@ if not df.empty:
     st.markdown('</div>', unsafe_allow_html=True)
 else:
     st.info("왼쪽 사이드바에서 엑셀 파일을 업로드하면 현황표가 나타납니다.")
-
