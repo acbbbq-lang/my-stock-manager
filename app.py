@@ -1,10 +1,10 @@
 import streamlit as st
 import pandas as pd
 
-# 1. 페이지 설정
+# 1. 페이지 설정 (가로로 넓게)
 st.set_page_config(page_title="일일 재고 현황표", layout="wide")
 
-# 2. 디자인 (CSS) - 가로 배치를 강제함
+# 2. 디자인 (CSS) - 가로 배치 및 지그재그 강제 설정
 st.markdown("""
 <style>
     .title { text-align: center; font-size: 3em; font-weight: bold; text-decoration: underline; margin-bottom: 30px; }
@@ -26,13 +26,13 @@ st.markdown("""
 
 st.markdown('<div class="title">일 일 재 고 현 황 표</div>', unsafe_allow_html=True)
 
-# 3. 데이터 초기화 (35개 행)
+# 3. 데이터 초기화 (35개 행 고정)
 if 'inven' not in st.session_state:
     st.session_state['inven'] = pd.DataFrame({
         "품목명": [""] * 35, "수량": [0] * 35, "위치코드": [""] * 35
     })
 
-# 4. 입력 표
+# 4. 입력 표 (상단 노출)
 st.subheader("📝 재고 데이터 입력 (35개 항목)")
 edited_df = st.data_editor(st.session_state['inven'], num_rows="fixed", use_container_width=True)
 
@@ -42,9 +42,8 @@ if st.button("수정 내용 적용하기"):
 
 st.divider()
 
-# 5. 현황판 출력 (가로 7개씩 5줄 지그재그)
+# 5. 현황판 출력 (7개씩 5줄 가로 지그재그)
 df = st.session_state['inven']
-st.markdown('<div class="main-board">', unsafe_allow_html=True)
+st.markdown('<div class="board">', unsafe_allow_html=True)
 
-for r in range(5):
-    # 줄마다 지그재그
+# 35개를 7개씩 5번
