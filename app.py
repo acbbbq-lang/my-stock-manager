@@ -4,54 +4,57 @@ import pandas as pd
 # 1. 페이지 설정
 st.set_page_config(page_title="일일 재고 현황표", layout="wide")
 
-# 2. CSS: 간격 넓히기 및 시인성 최적화
+# 2. CSS: 중앙 정렬 및 위아래 공백 제거
 st.markdown("""
 <style>
     .title { text-align: center; font-size: 3.5em; font-weight: bold; text-decoration: underline; margin-bottom: 20px; }
     
+    /* 전체 컨테이너: 중앙 정렬 유지 */
     .main-container {
-        position: relative; width: 1100px; margin: 0 auto; padding: 20px 0;
+        display: flex; flex-direction: column; align-items: center;
+        width: 100%; margin: 0 auto; padding: 0;
         background-color: white;
     }
 
-    /* 행 간격: -80px에서 -45px로 줄여 위아래 간격을 벌림 */
+    /* 행 레이아웃: 좌우 쏠림 방지를 위해 margin-left 제거 및 중앙 정렬 */
     .row-cont { 
         display: flex; justify-content: center; position: relative; 
-        margin-bottom: -45px; 
+        width: 100%;
+        margin-bottom: -40px; /* 위아래 도형이 겹치는 정도 (공백 제거) */
     }
 
-    /* 레이어 순서 유지 */
+    /* 레이어 순서 */
     .layer-top { z-index: 100 !important; }
     .layer-bottom { z-index: 50 !important; }
 
-    /* 카드 스타일: 좌우 간격(-15px -> -5px)을 벌려 글자 가림 방지 */
+    /* 카드 스타일: 간격을 촘촘하게 하되 글자는 안 가리게 */
     .card {
-        width: 135px; height: 135px;
+        width: 130px; height: 130px;
         display: flex; flex-direction: column; justify-content: center; align-items: center;
         background-color: white; 
-        margin: 0 -5px; 
+        margin: 0 -3px; /* 좌우 겹침 미세 조정 */
         flex-shrink: 0;
         border: 2px solid #000; 
-        box-shadow: 2px 2px 6px rgba(0,0,0,0.1);
+        box-shadow: 1px 1px 5px rgba(0,0,0,0.1);
     }
 
     .shape-circle { border-radius: 50%; }
-    .shape-square { border-radius: 12px; }
+    .shape-square { border-radius: 15px; }
 
-    /* 텍스트 스타일: 가독성을 위해 크기 미세 조정 */
+    /* 텍스트 스타일 */
     .p-n { font-weight: bold; font-size: 14px; margin-bottom: 2px; }
-    .p-q { font-size: 20px; font-weight: 900; color: #000; line-height: 1.1; }
+    .p-q { font-size: 19px; font-weight: 900; color: #000; line-height: 1.0; }
     .p-l { color: #8eb44e; font-size: 12px; font-weight: bold; margin-top: 2px; }
     
     .t-blue { color: #0000FF; }
     .t-orange { color: #d35400; }
-    .zero-bg { background-color: #fff1f0; } /* 수량 0일 때 배경색 */
+    .zero-bg { background-color: #fff1f0; }
 </style>
 """, unsafe_allow_html=True)
 
 st.markdown('<div class="title">일 일 재 고 현 황 표</div>', unsafe_allow_html=True)
 
-# 3. 데이터 관리 (세션 상태)
+# 3. 데이터 로드 (세션 상태)
 if 'inven' not in st.session_state:
     st.session_state['inven'] = pd.DataFrame({
         "품목명": ["WASW", "WCRS", "WASW", "WASWP", "WUR", "WNS", "WASW"] + ["-"] * 28,
@@ -59,16 +62,14 @@ if 'inven' not in st.session_state:
         "위치코드": ["A101", "A102", "A103", "A104", "A105", "A106", "A107"] + [f"A{i}" for i in range(201, 229)]
     })
 
-# 4. 데이터 입력창 (상단 고정)
-with st.expander("📝 데이터 수정 및 품목 입력"):
-    edited_df = st.data_editor(st.session_state['inven'], use_container_width=True, num_rows="fixed")
-    if st.button("내용 반영하기"):
+# 4. 데이터 입력창 (상단)
+with st.expander("📝 데이터 편집기"):
+    edited_df = st.data_editor(st.session_state['inven'], use_container_width=True)
+    if st.button("저장 후 적용"):
         st.session_state['inven'] = edited_df
         st.rerun()
 
-st.markdown("---") # 구분선
-
-# 5. 현황판 배치
+# 5. 현황판 출력
 df = st.session_state['inven']
 st.markdown('<div class="main-container">', unsafe_allow_html=True)
 
@@ -77,8 +78,8 @@ for r in range(5):
     layer_cls = "layer-top" if is_circle else "layer-bottom"
     shape_cls = "shape-circle" if is_circle else "shape-square"
     
-    # 지그재그 배치 간격 유지
-    row_style = "margin-left: 70px;" if not is_circle else ""
+    # 지그재그를 위해 네모 행은 아주 살짝만(30px) 이동시켜 좌우 밸런스를 맞춤
+    row_style = "padding-left: 60px;" if not is_circle else ""
     
     row_html = f'<div class="row-cont {layer_cls}" style="{row_style}">'
     
