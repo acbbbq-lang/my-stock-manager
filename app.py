@@ -1,90 +1,48 @@
 import streamlit as st
 import pandas as pd
-import sqlite3
 
-# --- 화면 스타일 설정 (이미지 디자인 재현) ---
+# --- 화면 설정 ---
 st.set_page_config(page_title="일일 재고 현황표", layout="wide")
 
+# --- 디자인 스타일 (보내주신 이미지 재현) ---
 st.markdown("""
     <style>
-    .title { text-align: center; font-size: 3em; font-weight: bold; text-decoration: underline; margin-bottom: 50px; }
+    .title { text-align: center; font-size: 3em; font-weight: bold; text-decoration: underline; margin-bottom: 30px; }
     .stock-container { display: flex; flex-wrap: wrap; justify-content: center; background-color: white; padding: 20px; border: 1px solid #ccc; }
     .stock-card {
         border: 1px solid #333;
         border-radius: 50%;
-        width: 130px;
-        height: 130px;
+        width: 120px;
+        height: 120px;
         display: flex;
         flex-direction: column;
         justify-content: center;
         align-items: center;
-        margin: 15px;
+        margin: 10px;
         text-align: center;
         background-color: white;
     }
-    .item-name { font-weight: bold; color: #0000FF; font-size: 1.1em; }
-    .item-qty { font-size: 1.3em; font-weight: bold; margin: 2px 0; color: #000; }
-    .item-loc { color: #99cc99; font-size: 0.85em; }
+    .item-name { font-weight: bold; color: #0000FF; font-size: 1em; }
+    .item-qty { font-size: 1.2em; font-weight: bold; margin: 2px 0; color: #000; }
+    .item-loc { color: #88bb88; font-size: 0.8em; }
     .low-stock { background-color: #ffebee; border-color: #ff0000; }
     .low-stock .item-qty { color: #ff0000; }
     </style>
     """, unsafe_allow_html=True)
 
-# --- 데이터베이스 함수 ---
-def save_to_db(df):
-    conn = sqlite3.connect('inventory.db')
-    df.to_sql('inventory', conn, if_exists='replace', index=False)
-    conn.commit()
-    conn.close()
-
-def load_from_db():
-    conn = sqlite3.connect('inventory.db')
-    try:
-        df = pd.read_sql_query("SELECT * FROM inventory", conn)
-    except:
-        df = pd.DataFrame(columns=['item_name', 'quantity', 'location'])
-    conn.close()
-    return df
-
-# --- 메인 화면 ---
 st.markdown('<div class="title">일 일 재 고 현 황 표</div>', unsafe_allow_html=True)
 
-# 사이드바: 엑셀 업로드 (오타 수정됨!)
-st.sidebar.header("📁 데이터 업데이트")
-uploaded_file = st.sidebar.file_uploader("엑셀 파일 업로드 (.xlsx)", type=["xlsx"])
+# --- 데이터 관리 (초기값) ---
+if 'inventory_data' not in st.session_state:
+    # 처음 접속했을 때 보여줄 예시 데이터
+    st.session_state.inventory_data = pd.DataFrame([
+        {"item_name": "WASW", "quantity": 1508, "location": "A101"},
+        {"item_name": "WCRS", "quantity": 1671, "location": "A102"},
+        {"item_name": "WASW", "quantity": 1754, "location": "A103"},
+        {"item_name": "WASWP", "quantity": 1496, "location": "A104"},
+        {"item_name": "WUR", "quantity": 1494, "location": "A105"},
+        {"item_name": "WNS", "quantity": 1686, "location": "A106"}
+    ])
 
-if uploaded_file:
-    try:
-        new_data = pd.read_excel(uploaded_file)
-        if all(col in new_data.columns for col in ['item_name', 'quantity', 'location']):
-            save_to_db(new_data)
-            st.sidebar.success("엑셀 데이터 반영 완료!")
-        else:
-            st.sidebar.error("엑셀 헤더를 확인하세요: item_name, quantity, location")
-    except Exception as e:
-        st.sidebar.error(f"에러 발생: {e}")
-
-# 데이터 불러오기
-df = load_from_db()
-
-# 현황판 출력
-if not df.empty:
-    st.markdown('<div class="stock-container">', unsafe_allow_html=True)
-    
-    # 6개씩 컬럼 생성
-    for i in range(0, len(df), 6):
-        row_data = df.iloc[i:i+6]
-        cols = st.columns(6)
-        for j, (idx, item) in enumerate(row_data.iterrows()):
-            with cols[j]:
-                is_low = "low-stock" if item['quantity'] == 0 else ""
-                st.markdown(f"""
-                    <div class="stock-card {is_low}">
-                        <div class="item-name">{item['item_name']}</div>
-                        <div class="item-qty">{int(item['quantity']):,}</div>
-                        <div class="item-loc">{item['location']}</div>
-                    </div>
-                """, unsafe_allow_html=True)
-    st.markdown('</div>', unsafe_allow_html=True)
-else:
-    st.info("왼쪽 사이드바에서 엑셀 파일을 업로드하면 현황표가 나타납니다.")
+# --- 1. 데이터 입력/수정 영역 ---
+st.subheader
