@@ -32,61 +32,58 @@ st.markdown("""
 
 st.markdown('<div class="title">일 일 재 고 현 황 표</div>', unsafe_allow_html=True)
 
-# --- 데이터 관리 (초기값) ---
+# --- 데이터 관리 ---
 if 'inventory_data' not in st.session_state:
-    # 처음 접속했을 때 보여줄 예시 데이터
     st.session_state.inventory_data = pd.DataFrame([
-        {"item_name": "WASW", "quantity": 1508, "location": "A101"},
-        {"item_name": "WCRS", "quantity": 1671, "location": "A102"},
-        {"item_name": "WASW", "quantity": 1754, "location": "A103"},
-        {"item_name": "WASWP", "quantity": 1496, "location": "A104"},
-        {"item_name": "WUR", "quantity": 1494, "location": "A105"},
-        {"item_name": "WNS", "quantity": 1686, "location": "A106"}
+        {"item_name": "WASW", "quantity": 1508.0, "location": "A101"},
+        {"item_name": "WCRS", "quantity": 1671.0, "location": "A102"}
     ])
 
-# --- 1. 데이터 입력/수정 영역 ---
-st.subheader("📝 재고 편집 (엑셀처럼 수정하세요)")
-# 사용자가 직접 표를 수정할 수 있는 기능
+st.subheader("📝 재고 편집 (수정 후 아래 버튼을 꼭 눌러주세요)")
+
+# 표 편집기
 edited_df = st.data_editor(
     st.session_state.inventory_data,
-    num_rows="dynamic", # 줄 추가/삭제 가능
-    use_container_width=True,
-    column_config={
-        "item_name": "품목명",
-        "quantity": "수량",
-        "location": "위치코드"
-    }
+    num_rows="dynamic",
+    use_container_width=True
 )
 
-# 수정된 내용을 저장
+# [수정 적용] 버튼
 if st.button("수정 내용 적용하기"):
-    st.session_state.inventory_data = edited_df
-    st.success("현황판에 반영되었습니다!")
+    st.session_state.inventory_data = edited_df.copy()
+    st.rerun()
 
 st.divider()
 
-# --- 2. 현황판 출력 영역 (이미지 디자인) ---
+# --- 현황판 출력 ---
 df = st.session_state.inventory_data
 
 if not df.empty:
     st.markdown('<div class="stock-container">', unsafe_allow_html=True)
     
-    # 6개씩 한 줄에 배치
+    # 6개씩 배치
     for i in range(0, len(df), 6):
         row_data = df.iloc[i:i+6]
         cols = st.columns(6)
         for j, (idx, item) in enumerate(row_data.iterrows()):
             with cols[j]:
-                # 수량이 0이면 빨간색 강조
-                is_low = "low-stock" if item['quantity'] <= 0 else ""
-                # 숫자에 콤마(,) 추가
-                formatted_qty = f"{int(item['quantity']):,}" if pd.notnull(item['quantity']) else "0"
+                # --- 에러 방지 처리 시작 ---
+                try:
+                    raw_qty = item['quantity']
+                    # 값이 비었거나 숫자가 아니면 0으로 처리
+                    qty_val = float(raw_qty) if pd.notnull(raw_qty) else 0.0
+                except:
+                    qty_val = 0.0
+                
+                is_low = "low-stock" if qty_val <= 0 else ""
+                formatted_qty = f"{int(qty_val):,}"
+                # --- 에러 방지 처리 끝 ---
                 
                 st.markdown(f"""
                     <div class="stock-card {is_low}">
-                        <div class="item-name">{item['item_name']}</div>
+                        <div class="item-name">{item.get('item_name', '품목없음')}</div>
                         <div class="item-qty">{formatted_qty}</div>
-                        <div class="item-loc">{item['location']}</div>
+                        <div class="item-loc">{item.get('location', '-')}</div>
                     </div>
                 """, unsafe_allow_html=True)
     st.markdown('</div>', unsafe_allow_html=True)
