@@ -32,9 +32,25 @@ st.markdown("""
 
 st.markdown('<div class="title">일 일 재 고 현 황 표</div>', unsafe_allow_html=True)
 
-# 3. 데이터 초기화 (35개 행 고정)
+# 3. 데이터 초기화 (35개 행 고정 - 에러가 났던 구간 완벽 수정)
 if 'inventory_data' not in st.session_state:
     initial_data = pd.DataFrame({
         "품목명": [""] * 35, 
         "수량": [None] * 35, 
-        "위치코드": [""] *
+        "위치코드": [""] * 35
+    })
+    st.session_state['inventory_data'] = initial_data
+
+# 4. 데이터 입력 표 (상단에 35개 행 유지)
+st.subheader("📝 재고 데이터 입력 (35개 항목)")
+edited_df = st.data_editor(
+    st.session_state['inventory_data'],
+    num_rows="fixed",
+    use_container_width=True,
+    hide_index=False,
+    key="inventory_editor"
+)
+
+# [수정 내용 적용하기] 버튼
+if st.button("수정 내용 적용하기"):
+    if edited
