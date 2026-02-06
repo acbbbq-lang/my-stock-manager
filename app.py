@@ -26,15 +26,3 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 st.markdown('<div class="title">일 일 재 고 현 황 표</div>', unsafe_allow_html=True)
-
-# 3. 데이터 초기화
-if 'inventory_data' not in st.session_state:
-    st.session_state.inventory_data = pd.DataFrame(columns=["품목명", "수량", "위치코드"])
-
-st.subheader("📝 재고 데이터 입력")
-
-# 괄호를 안전하게 닫은 데이터 편집기 구간
-edited_df = st.data_editor(
-    st.session_state.inventory_data,
-    num_rows="dynamic",
-    use_container_width=True
