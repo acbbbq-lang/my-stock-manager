@@ -45,4 +45,48 @@ if 'inventory_data' not in st.session_state:
     ])
 
 # --- 1. 데이터 입력/수정 영역 ---
-st.subheader
+st.subheader("📝 재고 편집 (엑셀처럼 수정하세요)")
+# 사용자가 직접 표를 수정할 수 있는 기능
+edited_df = st.data_editor(
+    st.session_state.inventory_data,
+    num_rows="dynamic", # 줄 추가/삭제 가능
+    use_container_width=True,
+    column_config={
+        "item_name": "품목명",
+        "quantity": "수량",
+        "location": "위치코드"
+    }
+)
+
+# 수정된 내용을 저장
+if st.button("수정 내용 적용하기"):
+    st.session_state.inventory_data = edited_df
+    st.success("현황판에 반영되었습니다!")
+
+st.divider()
+
+# --- 2. 현황판 출력 영역 (이미지 디자인) ---
+df = st.session_state.inventory_data
+
+if not df.empty:
+    st.markdown('<div class="stock-container">', unsafe_allow_html=True)
+    
+    # 6개씩 한 줄에 배치
+    for i in range(0, len(df), 6):
+        row_data = df.iloc[i:i+6]
+        cols = st.columns(6)
+        for j, (idx, item) in enumerate(row_data.iterrows()):
+            with cols[j]:
+                # 수량이 0이면 빨간색 강조
+                is_low = "low-stock" if item['quantity'] <= 0 else ""
+                # 숫자에 콤마(,) 추가
+                formatted_qty = f"{int(item['quantity']):,}" if pd.notnull(item['quantity']) else "0"
+                
+                st.markdown(f"""
+                    <div class="stock-card {is_low}">
+                        <div class="item-name">{item['item_name']}</div>
+                        <div class="item-qty">{formatted_qty}</div>
+                        <div class="item-loc">{item['location']}</div>
+                    </div>
+                """, unsafe_allow_html=True)
+    st.markdown('</div>', unsafe_allow_html=True)
