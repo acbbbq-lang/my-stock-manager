@@ -2,9 +2,9 @@ import streamlit as st
 import pandas as pd
 
 # 1. 페이지 설정
-st.set_page_config(page_title="일일 재고 현황표", layout="wide")
+st.set_page_config(page_title="재고 현황판", layout="wide")
 
-# 2. CSS (가로 7개씩 5줄 배치 강제)
+# 2. 가로 배치 전용 CSS (절대 세로로 안 나오게 강제)
 st.markdown("""
 <style>
     .title { text-align: center; font-size: 3em; font-weight: bold; text-decoration: underline; margin-bottom: 30px; }
@@ -26,13 +26,13 @@ st.markdown("""
 
 st.markdown('<div class="title">일 일 재 고 현 황 표</div>', unsafe_allow_html=True)
 
-# 3. 데이터 초기화 (35개 행 고정)
+# 3. 데이터 초기화 (35개 항목 강제 생성)
 if 'inven' not in st.session_state:
     st.session_state['inven'] = pd.DataFrame({
         "품목명": [""] * 35, "수량": [0] * 35, "위치코드": [""] * 35
     })
 
-# 4. 상단 입력 표
+# 4. 상단 입력 표 (무조건 노출)
 st.subheader("📝 재고 데이터 입력 (35개 항목)")
 edited_df = st.data_editor(st.session_state['inven'], num_rows="fixed", use_container_width=True)
 
@@ -47,5 +47,25 @@ df = st.session_state['inven']
 st.markdown('<div class="main-board">', unsafe_allow_html=True)
 
 for r in range(5):
-    # 줄 생성 및 지그재그 설정
+    # 줄 생성 및 지그재그 적용
     zz_cls = "zigzag" if r % 2 != 0 else ""
+    # 7개의 원을 이 한 줄(row_html)에 담아 한 번에 출력 (가로 배치 핵심)
+    row_html = f'<div class="row-cont {zz_cls}">'
+    
+    sub_df = df.iloc[r*7 : (r+1)*7]
+    for _, row in sub_df.iterrows():
+        nm = str(row["품목명"]) if row["품목명"] else "-"
+        lc = str(row["위치코드"]) if row["위치코드"] else ""
+        try: qt = int(row["수량"])
+        except: qt = 0
+        
+        cls = "zero" if qt == 0 else ""
+        row_html += f'<div class="circle {cls}">'
+        row_html += f'<div class="p-n">{nm[:7]}</div>'
+        row_html += f'<div class="p-q">{qt:,}</div>'
+        row_html += f'<div class="p-l">{lc}</div></div>'
+    
+    row_html += '</div>'
+    st.markdown(row_html, unsafe_allow_html=True)
+
+st.markdown('</div>', unsafe_allow_html=True)
