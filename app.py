@@ -4,7 +4,7 @@ import pandas as pd
 # 1. 화면 설정 (광폭 레이아웃 사용)
 st.set_page_config(page_title="일일 재고 현황표", layout="wide")
 
-# 2. 이미지(5a975b) 기반 가로 지그재그 디자인 설정
+# 2. 디자인 스타일 (지그재그 가로 배치 및 색상 설정)
 st.markdown("""
 <style>
     .title { text-align: center; font-size: 3.5em; font-weight: bold; text-decoration: underline; margin-bottom: 40px; }
@@ -32,11 +32,19 @@ st.markdown("""
 
 st.markdown('<div class="title">일 일 재 고 현 황 표</div>', unsafe_allow_html=True)
 
-# 3. 데이터 관리 및 초기화
+# 3. 데이터 초기화 (에러가 났던 42번 줄 따옴표 완벽 수정)
 if 'inventory_data' not in st.session_state:
     st.session_state['inventory_data'] = pd.DataFrame(columns=["품목명", "수량", "위치코드"])
 
-# 4. 데이터 입력 섹션 (에러가 났던 41번 줄 수정 완료)
+# 4. 데이터 입력 섹션 (표)
 st.subheader("📝 재고 데이터 입력")
 edited_df = st.data_editor(
-    st.session_state['inventory
+    st.session_state['inventory_data'],
+    num_rows="dynamic",
+    use_container_width=True,
+    hide_index=True,
+    key="inventory_editor"
+)
+
+#
+
