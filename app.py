@@ -4,7 +4,7 @@ import pandas as pd
 # 1. 화면 설정
 st.set_page_config(page_title="일일 재고 현황표", layout="wide")
 
-# 2. CSS 디자인 (가로 지그재그 정렬)
+# 2. 디자인 스타일 (지그재그 7x5 가로 배치)
 st.markdown("""
 <style>
     .title { text-align: center; font-size: 3em; font-weight: bold; text-decoration: underline; margin-bottom: 30px; }
@@ -26,13 +26,13 @@ st.markdown("""
 
 st.markdown('<div class="title">일 일 재 고 현 황 표</div>', unsafe_allow_html=True)
 
-# 3. 데이터 초기화 (35개 행 강제 생성)
+# 3. 데이터 초기화 (35개 항목 고정)
 if 'inven' not in st.session_state:
     st.session_state['inven'] = pd.DataFrame({
         "품목명": [""] * 35, "수량": [0] * 35, "위치코드": [""] * 35
     })
 
-# 4. 상단 입력 표 (무조건 노출)
+# 4. 입력 표 (상단 노출)
 st.subheader("📝 재고 데이터 입력 (35개 항목)")
 edited_df = st.data_editor(st.session_state['inven'], num_rows="fixed", use_container_width=True, key="editor")
 
@@ -47,11 +47,29 @@ df = st.session_state['inven']
 st.markdown('<div class="board">', unsafe_allow_html=True)
 
 for i in range(0, 35, 7):
-    # 7개씩 줄 생성 (홀수줄 밀기)
-    is_offset = "row-offset" if (i // 7) % 2 != 0 else ""
-    st.markdown(f'<div class="stock-row {is_offset}">', unsafe_allow_html=True)
+    # 7개씩 끊어서 줄 생성 (홀수줄 지그재그 밀기)
+    row_idx = i // 7
+    offset = "row-offset" if row_idx % 2 != 0 else ""
+    st.markdown(f'<div class="stock-row {offset}">', unsafe_allow_html=True)
     
-    row_data = df.iloc[i:i+7]
+    row_data = df.iloc[i : i+7]
     for _, row in row_data.iterrows():
         name = str(row["품목명"]) if row["품목명"] else "-"
-        loc = str(row["위
+        loc = str(row["위치코드"]) if row["위치코드"] else ""
+        try:
+            qty = int(row["수량"])
+        except:
+            qty = 0
+            
+        cls = "zero-qty" if qty == 0 else ""
+        
+        card_html = f"""
+        <div class="stock-card {cls}">
+            <div class="item-name">{name[:6]}</div>
+            <div class="item-qty">{qty:,}</div>
+            <div class="item-loc">{loc}</div>
+        </div>
+        """
+        st.markdown(card_html, unsafe_allow_html=True)
+    st.markdown('</div>', unsafe_allow_html=True)
+st.markdown('</div>', unsafe_allow_html=True)
